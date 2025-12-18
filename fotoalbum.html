@@ -211,8 +211,13 @@
       showSlides(slideIndex);
     }
 
-    fetch('images.php')
-      .then(function(r){ if(!r.ok) throw new Error('Network response not ok'); return r.json(); })
+    // try a pre-generated JSON first (works on static hosts like Netlify),
+    // fallback to images.php if available on a PHP-enabled host
+    function loadImages(){
+      return fetch('images.json').then(function(r){ if(!r.ok) throw new Error('no json'); return r.json(); });
+    }
+    loadImages()
+      .catch(function(){ return fetch('images.php').then(function(r){ if(!r.ok) throw new Error('no php'); return r.json(); }); })
       .then(function(images){ buildSlides(images); })
       .catch(function(err){ console.error('Error loading images:', err); });
   })();
