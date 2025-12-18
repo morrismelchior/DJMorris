@@ -29,9 +29,66 @@ $email_body .= "Bericht:\n$message\n";
 $headers = 'From: Website Contact <no-reply@yourdomain.com>' . "\r\n";
 $headers .= 'Reply-To: ' . $email . "\r\n";
 
-$sent = mail($to, $email_subject, $email_body, $headers);
+// Try to use PHPMailer via Composer if available, otherwise fallback to mail()
+$sent = false;
+try {
+    if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+        require __DIR__ . '/vendor/autoload.php';
+        if (file_exists(__DIR__ . '/smtp_config.php')) {
+            $SMTP_OPTIONS = require __DIR__ . '/smtp_config.php';
+        } else {
+            $SMTP_OPTIONS = [];
+        }
 
-$logLine = sprintf("%s | to=%s | from=%s | phone=%s | subject=%s | sent=%s\n", date('c'), $to, $email, $phone, $subject, $sent ? '1' : '0');
+        // Allow overriding sensitive credentials from environment variables
+        $envPassword = getenv('SMTP_PASSWORD');
+        if ($envPassword !== false && $envPassword !== '') {
+            $SMTP_OPTIONS['password'] = $envPassword;
+        }
+        $envUser = getenv('SMTP_USERNAME');
+        if ($envUser !== false && $envUser !== '') {
+            $SMTP_OPTIONS['username'] = $envUser;
+        }
+
+        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+        if (!empty($SMTP_OPTIONS['host'])) {
+            $mail->isSMTP();
+            $mail->Host = $SMTP_OPTIONS['host'];
+            $mail->SMTPAuth = true;
+            $mail->Username = $SMTP_OPTIONS['username'];
+            $mail->Password = $SMTP_OPTIONS['password'];
+            $mail->SMTPSecure = $SMTP_OPTIONS['encryption'] ?? PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = $SMTP_OPTIONS['port'] ?? 587;
+            // Enable debugging output to log for diagnosis
+            $mail->SMTPDebug = 2;
+            $mail->Debugoutput = function($str, $level) {
+                $logFile = __DIR__ . '/logs/mail.log';
+                $time = date('c');
+                file_put_contents($logFile, "[SMTP DEBUG] $time $str\n", FILE_APPEND | LOCK_EX);
+            };
+        }
+
+        $fromAddr = $SMTP_OPTIONS['from'] ?? 'no-reply@yourdomain.com';
+        $fromName = $SMTP_OPTIONS['from_name'] ?? 'Website Contact';
+
+        $mail->setFrom($fromAddr, $fromName);
+        $mail->addAddress($to);
+        $mail->addReplyTo($email, $fullname);
+        $mail->Subject = $email_subject;
+        $mail->Body = $email_body;
+        $mail->AltBody = strip_tags($email_body);
+        $mail->send();
+        $sent = true;
+    } else {
+        // fallback to PHP mail()
+        $sent = mail($to, $email_subject, $email_body, $headers);
+    }
+} catch (Exception $e) {
+    $sent = false;
+    @file_put_contents(__DIR__ . '/logs/mail.log', date('c') . " PHPMailer exception: " . $e->getMessage() . "\n", FILE_APPEND | LOCK_EX);
+}
+
+$logLine = sprintf("%s | method=%s | to=%s | from=%s | phone=%s | subject=%s | sent=%s\n", date('c'), (file_exists(__DIR__ . '/vendor/autoload.php') ? 'phpmailer' : 'mail'), $to, $email, $phone, $subject, $sent ? '1' : '0');
 @file_put_contents(__DIR__ . '/logs/mail.log', $logLine, FILE_APPEND | LOCK_EX);
 
 // Redirect with status so the thank-you page can show result

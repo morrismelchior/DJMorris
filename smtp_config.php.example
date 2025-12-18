@@ -1,0 +1,16 @@
+<?php
+// Copy this file to smtp_config.php and fill in your SMTP credentials.
+// Do NOT commit smtp_config.php with real credentials to source control.
+
+// Example for Outlook/Office365 or other SMTP providers
+// 'encryption' can be 'tls' or 'ssl' or left empty for STARTTLS constant
+
+return $SMTP_OPTIONS = [
+    'host' => 'smtp.example.com',
+    'username' => 'your-smtp-username',
+    'password' => 'your-smtp-password',
+    'port' => 587,
+    'encryption' => 'tls',
+    'from' => 'no-reply@yourdomain.com',
+    'from_name' => 'DJ Morris Website'
+];

@@ -1,0 +1,7 @@
+{
+  "name": "morrismelchior/djmorris-site",
+  "description": "DJ Morris website utilities",
+  "require": {
+    "phpmailer/phpmailer": "^6.8"
+  }
+}
