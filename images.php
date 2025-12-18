@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-$dir = __DIR__ . '/images';
+$dir = __DIR__ . '/images/slider';
 if(!is_dir($dir)){
     echo json_encode([]);
     exit;

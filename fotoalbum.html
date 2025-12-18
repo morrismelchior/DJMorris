@@ -149,73 +149,91 @@
   <script src="js/main.js"></script>
   <script>
   (function(){
-    var slideIndex = 1;
+    var slideIndex = 0;
+    var autoPlayTimer = null;
+    var autoPlayDelay = 5000;
+
     function showSlides(n){
-      var slides = document.querySelectorAll('.mySlides');
-      var dots = document.querySelectorAll('.dot');
+      var slides = Array.prototype.slice.call(document.querySelectorAll('.mySlides'));
+      var dots = Array.prototype.slice.call(document.querySelectorAll('.dot'));
       if(!slides.length) return;
-      if(n > slides.length) slideIndex = 1;
-      if(n < 1) slideIndex = slides.length;
-      slides.forEach(function(s){ s.style.display = 'none'; });
-      dots.forEach(function(d){ d.classList.remove('active'); });
-      slides[slideIndex-1].style.display = 'block';
-      dots[slideIndex-1].classList.add('active');
+      if(n >= slides.length) slideIndex = 0;
+      if(n < 0) slideIndex = slides.length - 1;
+      slides.forEach(function(s, idx){
+        s.classList.toggle('active', idx === slideIndex);
+      });
+      dots.forEach(function(d, idx){ d.classList.toggle('active', idx === slideIndex); });
     }
-    window.plusSlides = function(n){ showSlides(slideIndex += n); };
-    window.currentSlide = function(n){ showSlides(slideIndex = n); };
+
+    function nextSlide(){ showSlides(++slideIndex); }
+    function prevSlide(){ showSlides(--slideIndex); }
+    window.plusSlides = function(n){ if(n>0) nextSlide(); else prevSlide(); resetAutoPlay(); };
+    window.currentSlide = function(n){ slideIndex = n-1; showSlides(slideIndex); resetAutoPlay(); };
+
+    function startAutoPlay(){
+      if(autoPlayTimer) return;
+      autoPlayTimer = setInterval(nextSlide, autoPlayDelay);
+    }
+    function stopAutoPlay(){ if(autoPlayTimer){ clearInterval(autoPlayTimer); autoPlayTimer = null; } }
+    function resetAutoPlay(){ stopAutoPlay(); startAutoPlay(); }
+
+    function captionFromFilename(src){
+      try{ var name = src.split('/').pop(); name = name.replace(/\.[^/.]+$/, ''); name = name.replace(/[-_]/g, ' '); return name; }catch(e){return '';}
+    }
 
     function buildSlides(images){
       var container = document.getElementById('slideshow-container');
       var dotsContainer = document.getElementById('slideshow-dots');
-      if(!images || !images.length){
-        container.innerHTML = '<p>Geen afbeeldingen gevonden.</p>';
-        return;
-      }
+      if(!images || !images.length){ container.innerHTML = '<p>Geen afbeeldingen gevonden.</p>'; return; }
       container.innerHTML = '';
       images.forEach(function(src, i){
         var slide = document.createElement('div');
         slide.className = 'mySlides';
+
         var number = document.createElement('div');
         number.className = 'numbertext';
         number.textContent = (i+1) + ' / ' + images.length;
+
         var img = document.createElement('img');
+        img.dataset.src = src;
+        img.loading = 'lazy';
+        img.alt = captionFromFilename(src);
+        // set src immediately for static hosts; fallback if you want to lazy-load via IntersectionObserver
         img.src = src;
-        img.style.width = '100%';
-        var caption = document.createElement('div');
-        caption.className = 'text';
+
         slide.appendChild(number);
         slide.appendChild(img);
-        slide.appendChild(caption);
         container.appendChild(slide);
       });
-      var prev = document.createElement('a');
-      prev.className = 'prev';
-      prev.innerHTML = '&#10094;';
-      prev.onclick = function(){ plusSlides(-1); };
-      var next = document.createElement('a');
-      next.className = 'next';
-      next.innerHTML = '&#10095;';
-      next.onclick = function(){ plusSlides(1); };
-      container.appendChild(prev);
-      container.appendChild(next);
 
+      var prev = document.createElement('a'); prev.className = 'prev'; prev.innerHTML = '&#10094;'; prev.onclick = function(){ plusSlides(-1); };
+      var next = document.createElement('a'); next.className = 'next'; next.innerHTML = '&#10095;'; next.onclick = function(){ plusSlides(1); };
+      container.appendChild(prev); container.appendChild(next);
+
+      dotsContainer.className = 'slideshow-dots';
       dotsContainer.innerHTML = '';
       images.forEach(function(_, i){
-        var dot = document.createElement('span');
-        dot.className = 'dot';
+        var dot = document.createElement('span'); dot.className = 'dot';
         (function(idx){ dot.onclick = function(){ currentSlide(idx+1); }; })(i);
         dotsContainer.appendChild(dot);
       });
 
-      slideIndex = 1;
-      showSlides(slideIndex);
+      slideIndex = 0; showSlides(slideIndex);
+      startAutoPlay();
+
+      // pause on hover
+      container.addEventListener('mouseenter', stopAutoPlay);
+      container.addEventListener('mouseleave', startAutoPlay);
+
+      // keyboard
+      document.addEventListener('keydown', function(e){
+        if(e.key === 'ArrowLeft') { plusSlides(-1); }
+        if(e.key === 'ArrowRight') { plusSlides(1); }
+      });
     }
 
-    // try a pre-generated JSON first (works on static hosts like Netlify),
-    // fallback to images.php if available on a PHP-enabled host
-    function loadImages(){
-      return fetch('images.json').then(function(r){ if(!r.ok) throw new Error('no json'); return r.json(); });
-    }
+    // try a pre-generated JSON first (works on static hosts like Netlify), fallback to images.php
+    function loadImages(){ return fetch('images.json').then(function(r){ if(!r.ok) throw new Error('no json'); return r.json(); }); }
     loadImages()
       .catch(function(){ return fetch('images.php').then(function(r){ if(!r.ok) throw new Error('no php'); return r.json(); }); })
       .then(function(images){ buildSlides(images); })

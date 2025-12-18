@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const projectRoot = path.join(__dirname, '..');
-const imagesDir = path.join(projectRoot, 'images');
+const imagesDir = path.join(projectRoot, 'images', 'slider');
 const outFile = path.join(projectRoot, 'images.json');
 
 if (!fs.existsSync(imagesDir)) {
@@ -17,7 +17,7 @@ const files = fs.readdirSync(imagesDir).filter(f => {
 });
 
 files.sort((a,b) => a.localeCompare(b, undefined, {numeric:true, sensitivity:'base'}));
-const urls = files.map(f => 'images/' + f);
+const urls = files.map(f => 'images/slider/' + f);
 
 fs.writeFileSync(outFile, JSON.stringify(urls, null, 2), 'utf8');
 console.log('Wrote', outFile, 'with', urls.length, 'entries');
