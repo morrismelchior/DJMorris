@@ -31,11 +31,16 @@ $headers .= 'Reply-To: ' . $email . "\r\n";
 
 $sent = mail($to, $email_subject, $email_body, $headers);
 
+$logLine = sprintf("%s | to=%s | from=%s | phone=%s | subject=%s | sent=%s\n", date('c'), $to, $email, $phone, $subject, $sent ? '1' : '0');
+@file_put_contents(__DIR__ . '/logs/mail.log', $logLine, FILE_APPEND | LOCK_EX);
+
+// Redirect with status so the thank-you page can show result
 if ($sent) {
-    header('Location: contact-thanks.html');
+    header('Location: contact-thanks.html?sent=1');
     exit;
 } else {
-    echo "Er is een fout opgetreden bij het verzenden van het bericht. Probeer het later opnieuw.";
+    header('Location: contact-thanks.html?sent=0');
+    exit;
 }
 
 ?>

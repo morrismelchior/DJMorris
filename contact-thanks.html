@@ -9,9 +9,30 @@
 </head>
 <body>
   <div class="container text-center" style="padding:100px 15px;">
-    <h1>Bedankt</h1>
-    <p>Uw bericht is verzonden. Ik neem zo snel mogelijk contact met u op.</p>
+    <h1 id="ct-title">Bedankt</h1>
+    <p id="ct-message">Uw bericht is verzonden. Ik neem zo snel mogelijk contact met u op.</p>
     <p><a href="home.html" class="btn btn-primary">Terug naar de startpagina</a></p>
   </div>
+
+  <script>
+    (function(){
+      function getParam(name){
+        var params = new URLSearchParams(window.location.search);
+        return params.get(name);
+      }
+      var status = getParam('sent');
+      var title = document.getElementById('ct-title');
+      var msg = document.getElementById('ct-message');
+      if(status === '0'){
+        title.textContent = 'Fout bij verzenden';
+        msg.textContent = 'Er is iets misgegaan bij het verzenden van uw bericht. Probeer later opnieuw of neem direct contact op via e-mail.';
+        msg.style.color = '#a00';
+      } else if(status === '1'){
+        title.textContent = 'Bedankt';
+        msg.textContent = 'Uw bericht is verzonden. Ik neem zo snel mogelijk contact met u op.';
+        msg.style.color = '#000';
+      }
+    })();
+  </script>
 </body>
 </html>
