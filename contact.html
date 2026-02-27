@@ -77,9 +77,7 @@
       <div class="row">
   
         <div class="col-md-12 col-lg-7 mb-5">
-  
-  
-  
+          <div class="review-card p-4" data-aos="fade-up">
           <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="contact-thanks.html" class="contact-form">
             <input type="hidden" name="form-name" value="contact">
             <p class="d-none" aria-hidden="true">
@@ -106,14 +104,35 @@
               </div>
             </div>
 
+
             <div class="row form-group">
               <div class="col-md-12">
-                <label class="font-weight-bold" for="subject">Onderwerp</label>
-                <input type="text" id="subject" name="subject" class="form-control" placeholder="Onderwerp van uw bericht">
+                <label class="font-weight-bold" for="serviceType">Ik ben op zoek naar</label>
+                <div class="custom-select-wrapper">
+                  <select id="serviceType" name="serviceType" class="form-control">
+                  <option value="" hidden></option>
+                    <option value="dj-only">Alleen een DJ (zonder apparatuur)</option>
+                    <option value="equipment-rental">Huur van apparatuur</option>
+                    <option value="complete-show">Complete dj-show inclusief apparatuur</option>
+                    <option value="other">Anders, namelijk...</option>
+                  </select>
+                  <span class="select-placeholder">-- kies een optie --</span>
+                </div>
               </div>
             </div>
-  
-  
+            <div class="row form-group">
+              <div class="col-md-12">
+                <label class="font-weight-bold" for="eventDate">Datum</label>
+                <input type="text" id="eventDate" name="eventDate" class="form-control datepicker" placeholder=" Kies datum" required pattern="\d{2}-\d{2}-\d{4}" title="Gebruik formaat dd-mm-jjjj">
+              </div>
+            </div>
+            <div class="row form-group" id="other-service-row" style="display:none;">
+              <div class="col-md-12">
+                <label class="font-weight-bold" for="otherService">Specificeer andere optie</label>
+                <input type="text" id="otherService" name="otherService" class="form-control" placeholder="Uw toelichting">
+              </div>
+            </div>
+
             <div class="row form-group">
               <div class="col-md-12">
                 <label class="font-weight-bold" for="message">Jouw bericht</label>
@@ -130,10 +149,11 @@
   
   
           </form>
+          </div>
         </div>
   
         <div class="col-lg-4 ml-auto">
-          <div class="p-4 mb-3 bg-white">
+          <div class="p-4 mb-3 bg-white review-card" data-aos="fade-up">
             <h3 class="h5 text-black mb-3">Mijn contactgegevens</h3>
             <!-- <p class="mb-0 font-weight-bold text-black">Adres</p>
             <p class="mb-4 text-black">203 Fake St. Mountain View, San Francisco, California, USA</p> -->
@@ -259,6 +279,41 @@
   <script src="js/circleaudioplayer.js"></script>
 
   <script src="js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var serviceSelect = document.getElementById('serviceType');
+      var otherRow = document.getElementById('other-service-row');
+      if (serviceSelect) {
+        // placeholder visibility logic only
+        function updatePlaceholder(el) {
+          var placeholderSpan = el.parentNode.querySelector('.select-placeholder');
+          if (!el.value || el.value === '') {
+            if (placeholderSpan) placeholderSpan.classList.remove('hidden');
+          } else {
+            if (placeholderSpan) placeholderSpan.classList.add('hidden');
+          }
+        }
+        updatePlaceholder(serviceSelect);
+        serviceSelect.addEventListener('change', function() {
+          if (this.value === 'other') {
+            otherRow.style.display = 'block';
+          } else {
+            otherRow.style.display = 'none';
+            // clear other input when hiding
+            var otherInput = document.getElementById('otherService');
+            if (otherInput) otherInput.value = '';
+          }
+          updatePlaceholder(this);
+        });
+        serviceSelect.addEventListener('focus', function() {
+          updatePlaceholder(this);
+        });
+        serviceSelect.addEventListener('blur', function() {
+          updatePlaceholder(this);
+        });
+      }
+    });
+  </script>
 
 </body>
 

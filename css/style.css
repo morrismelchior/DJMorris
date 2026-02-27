@@ -198,6 +198,121 @@ a {
 .row-items {
   height: calc(50% - 15px);
   margin-bottom: 15px; }
+
+/* custom review styles */
+.review-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* home page wide version can break out */
+.review-container.wide {
+  max-width: 100%;
+}
+
+.review-card {
+  background: #f7f7f7;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.review-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  background: #ffffff;
+}
+
+.review-card h3 {
+  color: #333;
+}
+
+.review-card p {
+  color: #555;
+}
+
+/* make form controls more visible inside cards */
+.review-card .form-control {
+  background: #fff;
+  border: 1px solid #ccc;
+  color: #000 !important;
+}
+
+/* ensure typed text inside inputs/selects/textareas remains black */
+.review-card input.form-control,
+.review-card textarea.form-control,
+.review-card select.form-control {
+  color: #000 !important;
+}
+
+/* placeholders inside cards stay grey */
+.review-card ::placeholder {
+  color: #777 !important;
+  opacity: 1; /* override some browsers */
+}
+
+/* ensure invalid inputs don't turn text white */
+.review-card .form-control:invalid,
+.review-card .form-control.is-invalid {
+  color: #000 !important;
+}
+.review-card .form-control:focus {
+  border-color: #e3207b;
+  box-shadow: none;
+}
+
+.review-card label {
+  color: #000;
+}
+
+/* custom wrapper for select placeholder overlay */
+.custom-select-wrapper {
+  position: relative;
+}
+
+/* hide photo slideshow counter (top left) */
+.mySlides .numbertext {
+  display: none !important;
+}
+
+/* fade transition for slides */
+.mySlides {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.mySlides.active {
+  opacity: 1;
+}
+
+/* blur-up effect on images */
+.mySlides img.blur-up {
+  filter: blur(20px);
+  transition: filter 0.6s ease;
+}
+.mySlides img.blur-up.loaded {
+  filter: blur(0);
+}
+.custom-select-wrapper .select-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: #777;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.custom-select-wrapper .select-placeholder.hidden {
+  opacity: 0;
+}
+
+/* explicitly style disabled/placeholder option (some browsers use own color) */
+/* the placeholder is now a normal option; color handled by select itself */
+
+.review-card select.form-control option[value=""] {
+  color: #777;
+}
+
   .row-items.last {
     margin-bottom: 0; }
 
@@ -406,20 +521,23 @@ a {
       max-width: 100%;
       margin: 0 auto;
       overflow: hidden;
-      background: #000;
-      height: 60vh;
-      min-height: 320px;
+      background: #222831; /* dark blue/grey matching site background */
+      /* let the current photo determine the height */
+      height: auto;
+      min-height: 200px; /* show some space while the first image loads */
     }
     .slideshow-container .mySlides {
       display: block;
       width: 100%;
-      height: 100%;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 600ms ease-in-out, visibility 0ms linear 600ms;
+      /* slides are absolutely positioned so we can stack them but the container
+         height is recalculated via JavaScript */
       position: absolute;
       top: 0;
       left: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 600ms ease-in-out, visibility 0ms linear 600ms;
+      text-align: center;
     }
     .slideshow-container .mySlides.active {
       opacity: 1;
@@ -427,10 +545,11 @@ a {
       transition-delay: 0ms;
     }
     .slideshow-container img {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      display: inline-block;
+      width: auto;
+      max-width: 100%;
+      height: auto;
+      max-height: 80vh; /* prevent oversize on very tall images */
     }
     .slideshow-container .numbertext {
       color: #fff;
@@ -441,25 +560,33 @@ a {
       left: 8px;
       background: rgba(0,0,0,0.4);
       border-radius: 3px;
+      z-index: 2;
     }
     .slideshow-container .text {
       display: none;
     }
+    /* controls shifted to bottom center */
+    .slideshow-controls {
+      position: absolute;
+      bottom: 8px;
+      width: 100%;
+      text-align: center;
+      z-index: 2;
+    }
     .slideshow-container .prev,
     .slideshow-container .next {
       cursor: pointer;
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
+      display: inline-block;
+      position: static;
       color: #fff;
       font-size: 28px;
       padding: 8px 12px;
       background: rgba(0,0,0,0.4);
       border-radius: 3px;
       user-select: none;
+      margin: 0 12px;
     }
-    .slideshow-container .prev { left: 8px; }
-    .slideshow-container .next { right: 8px; }
+    /* remove old left/right rules - no longer needed */
     .slideshow-dots { text-align: center; padding: 12px 0; }
     .slideshow-dots .dot {
       display: inline-block;
@@ -1869,97 +1996,3 @@ figure figcaption {
           color: #fff;
           background: #e3207b; }
 
-* {box-sizing:border-box}
-
-/* Slideshow container */
-.slideshow-container {
-  max-width: 1000px;
-  position: relative;
-  margin: auto;
-}
-
-/* Hide the images by default */
-.mySlides {
-  display: none;
-}
-
-/* Next & previous buttons */
-.prev, .next {
-  cursor: pointer;
-  position: absolute;
-  top: 50%;
-  width: auto;
-  margin-top: -22px;
-  padding: 16px;
-  color: white;
-  font-weight: bold;
-  font-size: 18px;
-  transition: 0.6s ease;
-  border-radius: 0 3px 3px 0;
-  user-select: none;
-}
-
-/* Position the "next button" to the right */
-.next {
-  right: 0;
-  border-radius: 3px 0 0 3px;
-}
-
-/* On hover, add a black background color with a little bit see-through */
-.prev:hover, .next:hover {
-  background-color: rgba(0,0,0,0.8);
-}
-
-/* Caption text */
-.text {
-  color: #f2f2f2;
-  font-size: 15px;
-  padding: 8px 12px;
-  position: absolute;
-  bottom: 8px;
-  width: 100%;
-  text-align: center;
-}
-
-/* Number text (1/3 etc) */
-.numbertext {
-  color: #f2f2f2;
-  font-size: 12px;
-  padding: 8px 12px;
-  position: absolute;
-  top: 0;
-}
-
-/* The dots/bullets/indicators */
-.dot {
-  cursor: pointer;
-  height: 15px;
-  width: 15px;
-  margin: 0 2px;
-  background-color: #bbb;
-  border-radius: 50%;
-  display: inline-block;
-  transition: background-color 0.6s ease;
-}
-
-.active, .dot:hover {
-  background-color: #717171;
-}
-
-/* Fading animation */
-.fade {
-  -webkit-animation-name: fade;
-  -webkit-animation-duration: 1.5s;
-  animation-name: fade;
-  animation-duration: 1.5s;
-}
-
-@-webkit-keyframes fade {
-  from {opacity: .4} 
-  to {opacity: 1}
-}
-
-@keyframes fade {
-  from {opacity: .4} 
-  to {opacity: 1}
-}

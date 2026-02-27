@@ -153,6 +153,15 @@
     var autoPlayTimer = null;
     var autoPlayDelay = 5000;
 
+    function updateContainerHeight(){
+      var container = document.getElementById('slideshow-container');
+      var activeImg = container.querySelector('.mySlides.active img');
+      if(activeImg && activeImg.clientHeight > 0) {
+        // use client dimensions so we account for scaling via max-width
+        container.style.height = activeImg.clientHeight + 'px';
+      }
+    }
+
     function showSlides(n){
       var slides = Array.prototype.slice.call(document.querySelectorAll('.mySlides'));
       var dots = Array.prototype.slice.call(document.querySelectorAll('.dot'));
@@ -163,6 +172,7 @@
         s.classList.toggle('active', idx === slideIndex);
       });
       dots.forEach(function(d, idx){ d.classList.toggle('active', idx === slideIndex); });
+      updateContainerHeight();
     }
 
     function nextSlide(){ showSlides(++slideIndex); }
@@ -198,6 +208,13 @@
         img.dataset.src = src;
         img.loading = 'lazy';
         img.alt = captionFromFilename(src);
+        // blur-up placeholder
+        img.className = 'blur-up';
+        // when real image loads remove blur
+        img.onload = function(){
+          img.classList.add('loaded');
+          updateContainerHeight();
+        };
         // set src immediately for static hosts; fallback if you want to lazy-load via IntersectionObserver
         img.src = src;
 
@@ -206,9 +223,13 @@
         container.appendChild(slide);
       });
 
+      // arrows sit inside a controls wrapper so we can center them beneath the images
+      var controls = document.createElement('div'); controls.className = 'slideshow-controls';
       var prev = document.createElement('a'); prev.className = 'prev'; prev.innerHTML = '&#10094;'; prev.onclick = function(){ plusSlides(-1); };
       var next = document.createElement('a'); next.className = 'next'; next.innerHTML = '&#10095;'; next.onclick = function(){ plusSlides(1); };
-      container.appendChild(prev); container.appendChild(next);
+      controls.appendChild(prev);
+      controls.appendChild(next);
+      container.appendChild(controls);
 
       dotsContainer.className = 'slideshow-dots';
       dotsContainer.innerHTML = '';
@@ -230,6 +251,9 @@
         if(e.key === 'ArrowLeft') { plusSlides(-1); }
         if(e.key === 'ArrowRight') { plusSlides(1); }
       });
+
+      // keep height in sync if viewport changes
+      window.addEventListener('resize', updateContainerHeight);
     }
 
     // try a pre-generated JSON first (works on static hosts like Netlify), fallback to images.php
