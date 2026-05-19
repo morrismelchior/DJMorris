@@ -281,6 +281,19 @@
   <script src="js/main.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      var eventDateInput = document.querySelector('.datepicker');
+      if (eventDateInput && window.jQuery && jQuery().datepicker) {
+        jQuery(eventDateInput).datepicker({
+          format: 'dd-mm-yyyy',
+          autoclose: true,
+          todayHighlight: true,
+          weekStart: 1
+        }).on('changeDate', function() {
+          // ensure the value matches the required pattern even after selection
+          this.value = jQuery(this).datepicker('getFormattedDate');
+        });
+      }
+
       var serviceSelect = document.getElementById('serviceType');
       var otherRow = document.getElementById('other-service-row');
       if (serviceSelect) {
